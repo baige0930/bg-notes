@@ -1,6 +1,5 @@
 ---
-# 首页
-layout: home
+layout: default
 title: "首页"
 ---
 
