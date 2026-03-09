@@ -48,19 +48,35 @@
     var openBtn = $("#bg-sidebar-open-btn");
     if (!sidebar || !btn) return;
 
+    function isMobile() {
+      return window.innerWidth <= 960;
+    }
+
     function applyCollapsed(collapsed) {
+      if (isMobile()) {
+        // Mobile: use slide-in drawer via .is-open
+        sidebar.classList.toggle("is-open", !collapsed);
+        // Keep .is-collapsed in sync so the open button CSS can still work
+        sidebar.classList.toggle("is-collapsed", collapsed);
+        setExpanded(btn, !collapsed);
+        return;
+      }
+
+      // Desktop: width collapse
       if (collapsed) {
         sidebar.classList.add("is-collapsed");
+        sidebar.classList.remove("is-open");
         setExpanded(btn, false);
       } else {
         sidebar.classList.remove("is-collapsed");
+        sidebar.classList.add("is-open");
         setExpanded(btn, true);
       }
     }
 
     var collapsed = loadState("bg_sidebar_collapsed", false);
     // On small screens, always start collapsed
-    if (window.innerWidth <= 960) {
+    if (isMobile()) {
       collapsed = true;
     }
     applyCollapsed(collapsed);
@@ -77,6 +93,11 @@
         saveState("bg_sidebar_collapsed", false);
       });
     }
+
+    // Re-apply when resizing across breakpoints
+    window.addEventListener("resize", function () {
+      applyCollapsed(sidebar.classList.contains("is-collapsed"));
+    });
   }
 
   function initPanelCollapse() {
