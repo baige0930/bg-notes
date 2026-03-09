@@ -42,7 +42,7 @@
    ===================================================== */
 /* DO NOT override body font/color — Cayman's own styles are kept as-is */
 
-/* Header: only override padding to inset content away from fixed sidebars.
+/* Header: only override padding to inset content away from sidebars.
    Gradient color, font, and all other styles are Cayman's own — not touched. */
 .page-header {
   background-image: linear-gradient(120deg, #155799, #159957) !important;
@@ -65,10 +65,18 @@
    Full-viewport layout: fixed sidebars + fluid center
    ===================================================== */
 
+/* =====================================================
+   Main layout — flex row so sticky works naturally
+   ===================================================== */
+#content {
+  display: flex;
+  align-items: flex-start;
+}
+
 /* Floating open button — visible only when sidebar is hidden */
 .bg-sidebar-open-btn {
   position: fixed;
-  top: calc(var(--bg-header-height, 0px) + 48px);
+  top: 48px;
   left: 0;
   z-index: 101;
   width: 22px;
@@ -83,7 +91,6 @@
   text-align: center;
   cursor: pointer;
   box-shadow: 2px 0 6px rgba(0,0,0,.07);
-  /* No top transition — JS keeps it in sync with scroll directly */
   transition: color var(--bg-transition), background var(--bg-transition);
   display: none;
   padding: 0;
@@ -96,39 +103,35 @@
   background: var(--bg-accent-light);
 }
 
-/* Left sidebar — fixed to left edge */
+/* Left sidebar — sticky, sits below header naturally */
 .bg-sidebar {
-  position: fixed;
-  top: var(--bg-header-height, 0px);   /* overridden by JS inline style on scroll */
-  left: 0;
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
   width: var(--bg-sidebar-width);
-  height: calc(100vh - var(--bg-header-height, 0px));
+  height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.25rem 0.875rem;
   background: var(--bg-surface);
   border-right: 1px solid var(--bg-border);
-  border-radius: 0;
   box-shadow: 2px 0 8px rgba(0,0,0,.04);
   scrollbar-width: thin;
   scrollbar-color: var(--bg-border) transparent;
   z-index: 100;
-  transform: translateX(0);
-  transition: transform 0.22s ease;
-  clip-path: inset(0);
+  transition: width 0.22s ease, transform 0.22s ease;
 }
 
-/* Resize handle on the right edge of the left sidebar — fixed independently */
+/* Resize handle — absolute inside the sidebar (sticky context) */
 .bg-sidebar-resize-handle {
-  position: fixed;
-  top: var(--bg-header-height, 0px);
-  left: var(--bg-sidebar-width);
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 6px;
-  height: calc(100vh - var(--bg-header-height, 0px));
+  height: 100%;
   cursor: col-resize;
   z-index: 110;
   background: transparent;
-  transform: translateX(-3px);
   transition: background var(--bg-transition);
 }
 .bg-sidebar-resize-handle:hover,
@@ -137,57 +140,48 @@
   opacity: 0.4;
 }
 
-/* Hide handle when sidebar is collapsed */
-.bg-sidebar.is-collapsed ~ * .bg-sidebar-resize-handle,
-.bg-sidebar.is-collapsed + .bg-sidebar-resize-handle {
-  display: none;
-}
-
 .bg-sidebar::-webkit-scrollbar { width: 4px; }
 .bg-sidebar::-webkit-scrollbar-track { background: transparent; }
 .bg-sidebar::-webkit-scrollbar-thumb { background: var(--bg-border); border-radius: 4px; }
 
-/* Collapsed: fully hidden off-screen */
+/* Collapsed: zero width (slide out) */
 .bg-sidebar.is-collapsed {
-  transform: translateX(-100%);
-  width: var(--bg-sidebar-width);
-  padding: 1.25rem 0.875rem;
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+  border-right: none;
+  box-shadow: none;
 }
-.bg-sidebar.is-collapsed #bg-sidebar-panels { display: block; }
-/* Hide the collapse button when sidebar is off-screen (open button takes over) */
 .bg-sidebar.is-collapsed #bg-sidebar-toggle { visibility: hidden; }
 
-/* Right TOC — fixed to right edge */
+/* Right TOC — sticky on the right */
 .bg-sidebar-toc {
-  position: fixed;
-  top: var(--bg-header-height, 0px);   /* overridden by JS inline style on scroll */
-  right: 0;
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
   width: var(--bg-toc-width);
-  height: calc(100vh - var(--bg-header-height, 0px));
+  height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.25rem 0.875rem;
   background: var(--bg-surface);
   border-left: 1px solid var(--bg-border);
-  border-radius: 0;
   box-shadow: -2px 0 8px rgba(0,0,0,.04);
   scrollbar-width: thin;
   scrollbar-color: var(--bg-border) transparent;
   z-index: 100;
-  /* No top/height transition — scroll-synced by JS */
 }
 
-/* Resize handle on the left edge of the right TOC — fixed independently */
+/* Resize handle — absolute inside the TOC */
 .bg-toc-resize-handle {
-  position: fixed;
-  top: var(--bg-header-height, 0px);
-  right: var(--bg-toc-width);
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 6px;
-  height: calc(100vh - var(--bg-header-height, 0px));
+  height: 100%;
   cursor: col-resize;
   z-index: 110;
   background: transparent;
-  transform: translateX(3px);
   transition: background var(--bg-transition);
 }
 .bg-toc-resize-handle:hover,
@@ -200,18 +194,12 @@
 .bg-sidebar-toc::-webkit-scrollbar-track { background: transparent; }
 .bg-sidebar-toc::-webkit-scrollbar-thumb { background: var(--bg-border); border-radius: 4px; }
 
-/* Center content wrapper — pushed inward by sidebar widths */
+/* Center content wrapper — grows to fill space between the two sidebars */
 .bg-content-wrapper {
-  margin-left: var(--bg-sidebar-width);
-  margin-right: var(--bg-toc-width);
+  flex: 1;
+  min-width: 0;
   min-height: 100vh;
   background: var(--bg-surface-2);
-  transition: margin-left 0.22s ease;
-}
-
-/* Left sidebar collapsed → expand left margin to 0 */
-.bg-sidebar.is-collapsed ~ .bg-content-wrapper {
-  margin-left: 0;
 }
 
 /* Content card */
@@ -600,20 +588,27 @@
 }
 
 @media (max-width: 960px) {
-  /* Collapse both sidebars off-screen; center fills full width */
   .bg-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: var(--bg-sidebar-width);
     transform: translateX(-100%);
     transition: transform 0.22s ease;
+    z-index: 200;
   }
   .bg-sidebar.is-open {
     transform: translateX(0);
+    width: var(--bg-sidebar-width);
+    padding: 1.25rem 0.875rem;
+    overflow: auto;
   }
   .bg-sidebar-toc {
     display: none;
   }
   .bg-content-wrapper {
-    margin-left: 0;
-    margin-right: 0;
+    min-width: 0;
   }
   .bg-content {
     padding: 1.25rem 1.375rem !important;

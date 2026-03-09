@@ -37,46 +37,10 @@
     btn.setAttribute("aria-expanded", expanded ? "true" : "false");
   }
 
-  // Cached element references — populated once on DOMContentLoaded
-  var _header = null;
-  var _sidebar = null;
-  var _toc = null;
-  var _openBtn = null;
-  var _sidebarHandle = null;
-  var _tocHandle = null;
-  var _rafPending = false;
-
-  function _applyTop() {
-    _rafPending = false;
-    if (!_header) return;
-
-    var headerH = _header.offsetHeight;
-    document.documentElement.style.setProperty("--bg-header-height", headerH + "px");
-
-    var scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-    var top = Math.max(0, headerH - scrollY);
-    var h = "calc(100vh - " + top + "px)";
-
-    if (_sidebar)       { _sidebar.style.top       = top + "px"; _sidebar.style.height       = h; }
-    if (_toc)           { _toc.style.top            = top + "px"; _toc.style.height            = h; }
-    if (_openBtn)       { _openBtn.style.top        = (top + 48) + "px"; }
-    if (_sidebarHandle) { _sidebarHandle.style.top  = top + "px"; _sidebarHandle.style.height  = h; }
-    if (_tocHandle)     { _tocHandle.style.top      = top + "px"; _tocHandle.style.height      = h; }
-  }
-
-  function updateSidebarTop() {
-    // Schedule exactly one rAF per scroll burst — keeps DOM writes
-    // in sync with the browser's paint cycle and eliminates the
-    // one-frame lag that causes sidebars to overlap the header.
-    if (!_rafPending) {
-      _rafPending = true;
-      requestAnimationFrame(_applyTop);
-    }
-  }
-
-  function scheduleHeaderHeight() {
-    requestAnimationFrame(_applyTop);
-  }
+  // Scroll-sync removed — sidebars now use CSS position:sticky and follow
+  // the header naturally without any JavaScript.
+  function scheduleHeaderHeight() {}
+  function updateSidebarTop() {}
 
   function initSidebarCollapse() {
     var sidebar = $(".bg-sidebar");
@@ -89,16 +53,10 @@
         sidebar.classList.add("is-collapsed");
         setExpanded(btn, false);
         if (openBtn) openBtn.style.display = "block";
-        // Adjust content wrapper immediately
-        var wrapper = $(".bg-content-wrapper");
-        if (wrapper) wrapper.style.marginLeft = "0";
       } else {
         sidebar.classList.remove("is-collapsed");
         setExpanded(btn, true);
         if (openBtn) openBtn.style.display = "none";
-        // Restore margin
-        var wrapper2 = $(".bg-content-wrapper");
-        if (wrapper2) wrapper2.style.marginLeft = "";
       }
     }
 
@@ -428,39 +386,28 @@
     var root = document.documentElement;
     var sidebarHandle = document.getElementById("bg-sidebar-resize");
     var tocHandle     = document.getElementById("bg-toc-resize");
-    var sidebar       = document.querySelector(".bg-sidebar");
-    var wrapper       = document.querySelector(".bg-content-wrapper");
 
     // Restore saved widths
     var savedSidebar = parseInt(localStorage.getItem("bg-sidebar-width"), 10);
     var savedToc     = parseInt(localStorage.getItem("bg-toc-width"), 10);
     if (savedSidebar && savedSidebar >= MIN_W && savedSidebar <= MAX_W) {
       root.style.setProperty("--bg-sidebar-width", savedSidebar + "px");
-      if (sidebarHandle) sidebarHandle.style.left = savedSidebar + "px";
     }
     if (savedToc && savedToc >= MIN_W && savedToc <= MAX_W) {
       root.style.setProperty("--bg-toc-width", savedToc + "px");
-      if (tocHandle) tocHandle.style.right = savedToc + "px";
     }
 
-    // Helper: clamp and apply sidebar width, updating handle + wrapper margin
+    // Helper: clamp and apply sidebar width
     function applySidebarWidth(w) {
       w = Math.min(MAX_W, Math.max(MIN_W, w));
       root.style.setProperty("--bg-sidebar-width", w + "px");
-      if (sidebarHandle) sidebarHandle.style.left = w + "px";
-      // Only update margin if sidebar is not collapsed
-      if (sidebar && !sidebar.classList.contains("is-collapsed") && wrapper) {
-        wrapper.style.marginLeft = w + "px";
-      }
       return w;
     }
 
-    // Helper: clamp and apply TOC width, updating handle + wrapper margin
+    // Helper: clamp and apply TOC width
     function applyTocWidth(w) {
       w = Math.min(MAX_W, Math.max(MIN_W, w));
       root.style.setProperty("--bg-toc-width", w + "px");
-      if (tocHandle) tocHandle.style.right = w + "px";
-      if (wrapper) wrapper.style.marginRight = w + "px";
       return w;
     }
 
@@ -525,17 +472,6 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    // Cache element references once so scroll handler never touches the DOM query engine
-    _header       = document.querySelector(".page-header");
-    _sidebar      = document.querySelector(".bg-sidebar");
-    _toc          = document.querySelector(".bg-sidebar-toc");
-    _openBtn      = document.querySelector(".bg-sidebar-open-btn");
-    _sidebarHandle = document.getElementById("bg-sidebar-resize");
-    _tocHandle    = document.getElementById("bg-toc-resize");
-
-    scheduleHeaderHeight();
-    window.addEventListener("scroll", updateSidebarTop, { passive: true });
-    window.addEventListener("resize", function () { _rafPending = false; _applyTop(); });
     initSidebarCollapse();
     initPanelCollapse();
     buildToc();
