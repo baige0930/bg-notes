@@ -33,7 +33,7 @@ bg-notes/
 
 ```markdown
 ---
-layout: page
+layout: default
 title: "标题写这里"
 date: 2026-03-09
 ---

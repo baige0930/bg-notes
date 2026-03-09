@@ -1,0 +1,58 @@
+<aside class="bg-sidebar" aria-label="Sidebar" data-search-index-url="{{ '/search.json' | relative_url }}">
+  <div class="bg-sidebar__inner">
+    <div class="bg-sidebar__topbar">
+      <button id="bg-sidebar-toggle" class="bg-btn" type="button" aria-expanded="true" aria-controls="bg-sidebar-panels">
+        Sidebar
+      </button>
+    </div>
+
+    <div id="bg-sidebar-panels">
+      <section class="bg-panel" data-panel="search">
+        <div class="bg-panel__header">
+          <button class="bg-panel__toggle bg-btn-link" type="button" data-panel-toggle="search" aria-expanded="true">
+            Search
+          </button>
+        </div>
+        <div class="bg-panel__body" data-panel-body="search">
+          <input id="bg-search-input" class="bg-search-input" type="search" placeholder="Search..." autocomplete="off" />
+          <div id="bg-search-results" class="bg-search-results" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="bg-panel" data-panel="nav">
+        <div class="bg-panel__header">
+          <button class="bg-panel__toggle bg-btn-link" type="button" data-panel-toggle="nav" aria-expanded="true">
+            Notes
+          </button>
+        </div>
+        <div class="bg-panel__body" data-panel-body="nav">
+          <ul class="bg-nav">
+            {% comment %}Include all pages under /note/** (including subfolders).{% endcomment %}
+            {% assign note_pages = site.pages | where_exp: "p", "p.dir and (p.dir | slice: 0, 6) == '/note/'" %}
+            {% assign note_pages = note_pages | where_exp: "p", "p.name != 'index.md'" %}
+            {% assign note_pages = note_pages | sort: "title" %}
+            {% for p in note_pages %}
+              {% if p.title %}
+                <li class="bg-nav__item">
+                  <a class="bg-nav__link {% if page.url == p.url %}is-active{% endif %}" href="{{ p.url | relative_url }}">{{ p.title }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      </section>
+
+      <section class="bg-panel" data-panel="toc">
+        <div class="bg-panel__header">
+          <button class="bg-panel__toggle bg-btn-link" type="button" data-panel-toggle="toc" aria-expanded="true">
+            On this page
+          </button>
+        </div>
+        <div class="bg-panel__body" data-panel-body="toc">
+          <nav id="bg-toc" class="bg-toc" aria-label="Table of contents"></nav>
+        </div>
+      </section>
+    </div>
+  </div>
+</aside>
+
