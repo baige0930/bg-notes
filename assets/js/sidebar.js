@@ -37,11 +37,6 @@
     btn.setAttribute("aria-expanded", expanded ? "true" : "false");
   }
 
-  // Scroll-sync removed — sidebars now use CSS position:sticky and follow
-  // the header naturally without any JavaScript.
-  function scheduleHeaderHeight() {}
-  function updateSidebarTop() {}
-
   function initSidebarCollapse() {
     var sidebar = $(".bg-sidebar");
     var btn = $("#bg-sidebar-toggle");

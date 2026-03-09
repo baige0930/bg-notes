@@ -4,8 +4,6 @@
 :root {
   --bg-sidebar-width: 260px;
   --bg-toc-width: 230px;
-  --bg-sidebar-gap: 1.5rem;
-  --bg-header-height: 0px;   /* set by JS after DOM ready */
 
   /* Colors — follow Cayman's green palette */
   --bg-accent:        #159957;
@@ -18,18 +16,16 @@
   --bg-surface-2:     #f6f8fa;
   --bg-border:        #dce0e4;
   --bg-border-hover:  #b0bac4;
-  --bg-active-text:   #159957;
 
   /* Typography — sidebar UI only; inherit Cayman's font for page content */
   --bg-font-sans: "Open Sans", "Helvetica Neue", Arial, sans-serif;
-  --bg-font-mono: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
 
-  /* Radius — more conservative to match Cayman's style */
+  /* Radius */
   --bg-radius-sm:  3px;
   --bg-radius:     4px;
   --bg-radius-lg:  5px;
 
-  /* Shadows — very subtle */
+  /* Shadows */
   --bg-shadow-sm:  0 1px 2px rgba(0,0,0,.06);
   --bg-shadow:     0 2px 8px rgba(0,0,0,.08);
 
@@ -46,8 +42,22 @@ html, body {
 /* =====================================================
    Page header corner buttons (Home + GitHub)
    ===================================================== */
+/* Header: fixed to viewport width, never stretched by sidebar/content changes */
 .page-header {
   position: relative;
+  left: 0;
+  background-image: linear-gradient(120deg, #155799, #159957) !important;
+  padding-left: 4rem !important;
+  padding-right: 4rem !important;
+  box-sizing: border-box !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+}
+
+/* Title and tagline: never wrap due to sidebar width changes */
+.page-header .project-name,
+.page-header .project-tagline {
+  max-width: 100% !important;
 }
 
 .page-header__corner-btns {
@@ -155,12 +165,6 @@ html, body {
   margin: 0 !important;
   box-sizing: border-box;
 }
-
-/* Reset any extra top-padding added by .main-content override, handled by .bg-content */
-
-/* =====================================================
-   Full-viewport layout: fixed sidebars + fluid center
-   ===================================================== */
 
 /* =====================================================
    Main layout — flex row so sticky works naturally
@@ -314,8 +318,6 @@ html, body {
   background: var(--bg-surface);
   border-left: 1px solid var(--bg-border);
   border-right: 1px solid var(--bg-border);
-  border-radius: 0;
-  box-shadow: none;
   padding: 2rem 2.5rem !important;
   min-height: 100vh;
 }
