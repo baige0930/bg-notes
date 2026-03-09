@@ -1,77 +1,83 @@
 # bg-notes
 
-这是我的在线笔记仓库（GitHub Pages + Jekyll）。
+基于 Jekyll + Cayman 主题的个人笔记站点，在 Cayman 原有样式基础上增加了双侧边栏、折叠导航、目录等功能。
 
-- **用途**：记录生活日记、技术笔记、杂记（Markdown）
-- **站点入口**：GitHub Pages（仓库 `Settings -> Pages` 可查看发布地址）
-
-## 目录结构（建议长期保持）
-
-```
-bg-notes/
-├── README.md
-├── _config.yml
-├── index.md
-└── 笔记/
-    ├── index.md
-    └── .gitkeep
-```
-
-## 我该怎么写一篇新文章？
-
-### 方式 A（推荐）：直接在分类目录里新建 `.md`
-
-1. 选择目录：
-   - 生活日记：`生活日记/2026/`
-   - 技术笔记：`技术笔记/`
-   - 杂记：`杂记/`
-2. 新建一个 Markdown 文件，例如：
-   - `生活日记/2026/03-09-周一.md`
-   - `技术笔记/ros2-parameter.md`
-   - `杂记/读书-xxx.md`
-3. 在文件顶部加上 **Jekyll Front Matter**（必须有这段，Jekyll 才会按页面渲染）：
-
-```markdown
 ---
-layout: default
-title: "标题写这里"
+
+## 与原版 Cayman 的主要改动
+
+- **双侧边栏**：左侧为笔记导航栏，右侧为当前页面目录（TOC），均使用 `position: sticky` 跟随页面滚动，无 JS 延迟
+- **导航节点可折叠**：每个文件夹节点左侧有箭头按钮，点击可折叠/展开，状态持久化到 `localStorage`
+- **右侧 TOC**：自动从页面 `h2`/`h3` 标题生成，滚动时高亮当前节点
+- **侧边栏宽度可拖拽调整**：拖动边缘 handle 改变宽度，宽度保存到 `localStorage`
+- **Header 右上角图标**：Home 按钮 + GitHub 仓库链接（SVG 图标，替代原版文字按钮）
+- **Cayman 原有样式完整保留**：字体、配色、渐变头、正文排版均未覆盖
+
+自定义样式文件：`assets/css/sidebar.css`  
+自定义脚本文件：`assets/js/sidebar.js`
+
+---
+
+## Layout 说明
+
+### `layout: home`
+
+用于站点首页（`index.md`），显示所有笔记的汇总列表，按日期倒序，支持分页。
+
+```yaml
+---
+layout: home
+title: "首页标题"
+---
+```
+
+---
+
+### `layout: folder_index`
+
+用于每个文件夹的 `index.md`，显示该文件夹下的文章列表。  
+`index.md` 的正文内容会渲染在列表上方。
+
+**Front matter 字段：**
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `title` | string | 文件夹标题，显示在列表标题和侧边栏导航中 |
+| `nav_expand` | string | 控制该节点在侧边栏的默认展开状态（见下） |
+
+**`nav_expand` 可选值：**
+
+| 值 | 效果 |
+|---|---|
+| `all`（默认，不填即为此值） | 侧边栏默认展开显示所有子页面 |
+| `none` | 侧边栏默认折叠，用户可手动点击展开 |
+| `1` | 同 `none`，默认折叠 |
+
+```yaml
+---
+layout: folder_index
+title: "C++ 笔记"
+nav_expand: none
+---
+
+这里是可选的文件夹简介，会渲染在文章列表上方。
+```
+
+---
+
+### `layout: page`
+
+用于普通笔记文章，渲染正文内容，顶部自动显示标题和日期。  
+右侧 TOC 会自动从 `h2`/`h3` 标题生成。
+
+```yaml
+---
+layout: page
+title: "文章标题"
 date: 2026-03-09
 ---
 
-## 小标题
+## 小节标题
 
-正文从这里开始……
+正文内容……
 ```
-
-### 方式 B：写成“博客文章”（可选）
-
-如果你更喜欢“按时间线发布”，可以使用 Jekyll posts 机制：
-
-1. 新建目录：`_posts/`
-2. 文件命名必须是：`YYYY-MM-DD-xxx.md`
-3. 文件头示例：
-
-```markdown
----
-layout: post
-title: "今天学到的东西"
-date: 2026-03-09
----
-```
-
-> 目前本仓库默认以“分类目录 + 入口页”为主；你后续要切换为 posts 我也可以帮你调整首页与列表页。
-
-## 发布/更新流程（每次写完都这样）
-
-1. 本地写 Markdown
-2. `git add .`
-3. `git commit -m "notes: add xxx"`
-4. `git push`
-5. 等待 GitHub Pages 自动构建（通常 1-3 分钟内生效）
-
-## 常用写作建议（保持简单且可维护）
-
-- **图片**：放到 `assets/images/`，文章里用相对路径引用，例如：`![alt](/assets/images/xxx.png)`
-- **链接**：优先用相对路径，例如：`[某篇笔记](/技术笔记/ros2-parameter.html)`  
-  - Jekyll 会把 `.md` 渲染成 `.html`，因此链接建议指向 `.html`
-- **文内目录（TOC）**：先用规范的 `## / ###` 标题层级；后续如果你希望自动 TOC/侧边栏，我可以在最小改动下加一个轻量实现

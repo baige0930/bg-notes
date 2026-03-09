@@ -1,6 +1,7 @@
 ---
 layout: folder_index
 title: "日记"
+nav_expand: None
 ---
 
 这里按时间汇总每天的日常记录。

@@ -1,6 +1,7 @@
 ---
 layout: folder_index
 title: "C++ 笔记"
+nav_expand: all
 ---
 
 这里是 C++ 相关的学习记录与笔记。

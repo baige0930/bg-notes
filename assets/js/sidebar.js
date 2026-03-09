@@ -112,12 +112,24 @@
       var chevron = group.querySelector(".bg-nav__chevron");
       if (!chevron) return;
 
-      // Use folder URL as stable key
       var link = group.querySelector(".bg-nav__group-link");
       var key = "bg_navgroup_" + (link ? link.getAttribute("href") : "") + "_collapsed";
 
-      // Restore saved state; default = expanded (false)
-      var collapsed = loadState(key, false);
+      // Read the nav_expand setting rendered from front matter:
+      //   "all"  (default) → expanded, ignore localStorage
+      //   "none"           → collapsed by default, but user can override via localStorage
+      //   "1"              → same as "none" for now (one level: group visible, children hidden)
+      var expand = group.getAttribute("data-nav-expand") || "all";
+
+      var collapsed;
+      if (expand === "none" || expand === "1") {
+        // Default is collapsed; respect localStorage if user has explicitly toggled
+        collapsed = loadState(key, true);
+      } else {
+        // "all": default is expanded; respect localStorage if user has explicitly toggled
+        collapsed = loadState(key, false);
+      }
+
       if (collapsed) group.classList.add("is-collapsed");
 
       chevron.addEventListener("click", function (e) {
