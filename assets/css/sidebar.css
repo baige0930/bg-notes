@@ -489,13 +489,18 @@ html, body {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  /* snippet is now a link — reset link styles */
+  text-decoration: none;
+  cursor: pointer;
 }
-
-/* Search keyword highlight (in search results only) */
+.bg-search-results__snippet:hover {
+  color: var(--bg-text);
+}
+/* keyword highlight inside snippet */
 .bg-search-results__snippet mark {
   background: #aef5e9;
   color: inherit;
-  padding: 0 0.15em;
+  padding: 0 0.1em;
   border-radius: 0.15em;
 }
 

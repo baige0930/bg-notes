@@ -300,30 +300,23 @@
       return indexPromise;
     }
 
-    function escapeRegExp(s) {
-      return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    }
-
-    function highlightSnippet(snippet, q) {
-      if (!q) return escapeHtml(snippet);
-      // Escape first, then safely wrap the escaped query
-      var safe = escapeHtml(snippet);
-      var re = new RegExp("(" + escapeRegExp(q) + ")", "ig");
-      return safe.replace(re, "<mark>$1</mark>");
-    }
-
-    function withQueryParam(url, q) {
-      if (!url) return "#";
-      try {
-        // Support both absolute and relative URLs
-        var u = new URL(url, window.location.origin);
-        u.searchParams.set("q", q);
-        return u.pathname + u.search + u.hash;
-      } catch (e) {
-        // Fallback: naive append
-        var sep = url.indexOf("?") >= 0 ? "&" : "?";
-        return url + sep + "q=" + encodeURIComponent(q);
+    // Highlight keyword in plain text, returning HTML with <mark> tags
+    function highlightSnippet(text, q) {
+      if (!q) return escapeHtml(text);
+      var result = "";
+      var lower = text.toLowerCase();
+      var idx = 0;
+      while (idx < text.length) {
+        var found = lower.indexOf(q, idx);
+        if (found < 0) {
+          result += escapeHtml(text.slice(idx));
+          break;
+        }
+        result += escapeHtml(text.slice(idx, found));
+        result += "<mark>" + escapeHtml(text.slice(found, found + q.length)) + "</mark>";
+        idx = found + q.length;
       }
+      return result;
     }
 
     function render(items, q) {
@@ -339,28 +332,25 @@
         .slice(0, 20)
         .map(function (it) {
           var title = escapeHtml(it.title || it.url || "");
-          var rawUrl = String(it.url || "#");
-          var url = escapeHtml(withQueryParam(rawUrl, q));
+          var rawUrl = it.url || "#";
+          var url = escapeHtml(rawUrl);
+          // URL with keyword hash so target page can scroll to it
+          var urlWithQ = escapeHtml(rawUrl + "#bg-search-q=" + encodeURIComponent(q));
           var content = String(it.content || "");
           var pos = content.toLowerCase().indexOf(q);
           var snippet = "";
+          var snippetRaw = "";
           if (pos >= 0) {
             var start = Math.max(0, pos - 60);
-            snippet = content.slice(start, start + 160).replace(/\s+/g, " ").trim();
+            snippetRaw = content.slice(start, start + 160).replace(/\s+/g, " ").trim();
           } else {
-            snippet = content.slice(0, 160).replace(/\s+/g, " ").trim();
+            snippetRaw = content.slice(0, 160).replace(/\s+/g, " ").trim();
           }
-          var snippetHtml = highlightSnippet(snippet, q);
+          snippet = highlightSnippet(snippetRaw, q);
           return (
             "<div class='bg-search-results__item'>" +
-            "<a class='bg-search-results__title' href='" +
-            url +
-            "'>" +
-            title +
-            "</a>" +
-            "<div class='bg-search-results__snippet'>" +
-            snippetHtml +
-            "</div>" +
+            "<a class='bg-search-results__title' href='" + url + "'>" + title + "</a>" +
+            "<a class='bg-search-results__snippet' href='" + urlWithQ + "'>" + snippet + "</a>" +
             "</div>"
           );
         })
@@ -398,41 +388,217 @@
     );
   }
 
-  // If arriving with ?q=... (from search results), scroll to first match in the article
-  function initSearchScrollToQuery() {
-    var params = new URLSearchParams(window.location.search);
-    var q = (params.get("q") || "").trim();
-    if (!q) return;
+  function initPagination() {
+    var lists = $all("[data-bg-paginate='true']");
+    if (!lists.length) return;
 
-    var root = document.getElementById("page-content") || document.body;
-    if (!root) return;
+    lists.forEach(function (list) {
+      var listId = list.id;
+      if (!listId) return;
+      var pageSizeAttr = list.getAttribute("data-bg-page-size");
+      var pageSize = parseInt(pageSizeAttr || "10", 10);
+      if (!(pageSize > 0)) pageSize = 10;
 
-    var target = null;
-    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode: function (node) {
-        if (!node.nodeValue) return NodeFilter.FILTER_REJECT;
-        var p = node.parentElement;
-        if (!p) return NodeFilter.FILTER_REJECT;
-        // Skip script/style/code/pre
-        if (p.closest && (p.closest("script") || p.closest("style") || p.closest("code") || p.closest("pre"))) {
-          return NodeFilter.FILTER_REJECT;
+      var items = $all("li", list);
+      if (items.length <= pageSize) return;
+
+      var pager = $("[data-bg-pagination-for='" + listId + "']");
+      if (!pager) return;
+
+      var current = 1;
+      var total = Math.ceil(items.length / pageSize);
+
+      function renderPage() {
+        var start = (current - 1) * pageSize;
+        var end = start + pageSize;
+        items.forEach(function (el, idx) {
+          el.style.display = idx >= start && idx < end ? "" : "none";
+        });
+
+        pager.innerHTML = "";
+        var prev = document.createElement("button");
+        prev.textContent = "← 上一页";
+        prev.disabled = current <= 1;
+        prev.addEventListener("click", function () {
+          if (current > 1) {
+            current -= 1;
+            renderPage();
+          }
+        });
+
+        var info = document.createElement("span");
+        info.textContent = "第 " + current + " 页，共 " + total + " 页";
+
+        var next = document.createElement("button");
+        next.textContent = "下一页 →";
+        next.disabled = current >= total;
+        next.addEventListener("click", function () {
+          if (current < total) {
+            current += 1;
+            renderPage();
+          }
+        });
+
+        pager.appendChild(prev);
+        pager.appendChild(info);
+        pager.appendChild(next);
+      }
+
+      renderPage();
+    });
+  }
+
+  // ── Drag-to-resize sidebars ──────────────────────────────────────────────
+  function initResize() {
+    var MIN_W = 160;
+    var MAX_W = 520;
+
+    var root = document.documentElement;
+    var sidebarEl = document.querySelector(".bg-sidebar");
+    var tocEl     = document.querySelector(".bg-sidebar-toc");
+    var sidebarHandle = document.getElementById("bg-sidebar-resize");
+    var tocHandle     = document.getElementById("bg-toc-resize");
+
+    // Restore saved widths
+    var savedSidebar = parseInt(localStorage.getItem("bg-sidebar-width"), 10);
+    var savedToc     = parseInt(localStorage.getItem("bg-toc-width"), 10);
+    if (savedSidebar && savedSidebar >= MIN_W && savedSidebar <= MAX_W) {
+      root.style.setProperty("--bg-sidebar-width", savedSidebar + "px");
+    }
+    if (savedToc && savedToc >= MIN_W && savedToc <= MAX_W) {
+      root.style.setProperty("--bg-toc-width", savedToc + "px");
+    }
+
+    // Helper: clamp and apply sidebar width
+    function applySidebarWidth(w) {
+      w = Math.min(MAX_W, Math.max(MIN_W, w));
+      root.style.setProperty("--bg-sidebar-width", w + "px");
+      return w;
+    }
+
+    // Helper: clamp and apply TOC width
+    function applyTocWidth(w) {
+      w = Math.min(MAX_W, Math.max(MIN_W, w));
+      root.style.setProperty("--bg-toc-width", w + "px");
+      return w;
+    }
+
+    // Left sidebar handle
+    if (sidebarHandle) {
+      sidebarHandle.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        sidebarHandle.classList.add("is-dragging");
+        // Disable transition during drag for instant response
+        if (sidebarEl) sidebarEl.style.transition = "none";
+        var startX   = e.clientX;
+        var startW   = sidebarEl ? sidebarEl.offsetWidth : 260;
+
+        function onMove(ev) {
+          var newW = startW + (ev.clientX - startX);
+          applySidebarWidth(newW);
         }
-        return node.nodeValue.toLowerCase().indexOf(q.toLowerCase()) >= 0
-          ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_REJECT;
+        function onUp() {
+          sidebarHandle.classList.remove("is-dragging");
+          // Re-enable transition after drag ends
+          if (sidebarEl) sidebarEl.style.transition = "";
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+          var finalW = parseInt(getComputedStyle(root).getPropertyValue("--bg-sidebar-width"), 10);
+          localStorage.setItem("bg-sidebar-width", finalW);
+        }
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+    }
+
+    // Right TOC handle
+    if (tocHandle) {
+      tocHandle.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        tocHandle.classList.add("is-dragging");
+        // Disable transition during drag for instant response
+        if (tocEl) tocEl.style.transition = "none";
+        var startX   = e.clientX;
+        var startW   = tocEl ? tocEl.offsetWidth : 230;
+
+        function onMove(ev) {
+          // Moving handle left → wider TOC
+          var newW = startW + (startX - ev.clientX);
+          applyTocWidth(newW);
+        }
+        function onUp() {
+          tocHandle.classList.remove("is-dragging");
+          // Re-enable transition after drag ends
+          if (tocEl) tocEl.style.transition = "";
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+          var finalW = parseInt(getComputedStyle(root).getPropertyValue("--bg-toc-width"), 10);
+          localStorage.setItem("bg-toc-width", finalW);
+        }
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+    }
+
+    // Prevent text selection while dragging
+    document.addEventListener("mousedown", function (e) {
+      if (e.target === sidebarHandle || e.target === tocHandle) {
+        document.body.style.userSelect = "none";
       }
     });
+    document.addEventListener("mouseup", function () {
+      document.body.style.userSelect = "";
+    });
+  }
 
-    target = walker.nextNode();
-    if (!target) return;
+  // Scroll to search keyword if arriving from a search result snippet link
+  function initSearchHighlight() {
+    var hash = window.location.hash || "";
+    var PREFIX = "#bg-search-q=";
+    if (hash.indexOf(PREFIX) !== 0) return;
 
-    var el = target.parentElement;
-    if (!el || !el.scrollIntoView) return;
+    var q = decodeURIComponent(hash.slice(PREFIX.length)).trim().toLowerCase();
+    if (!q) return;
 
-    // Slight delay to ensure layout is stable
-    setTimeout(function () {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 50);
+    // Wait for page content to settle, then find first text node matching q
+    function findAndScroll() {
+      var content = document.getElementById("page-content");
+      if (!content) return;
+
+      // Walk text nodes
+      var walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
+      var node;
+      while ((node = walker.nextNode())) {
+        var text = node.textContent || "";
+        var pos = text.toLowerCase().indexOf(q);
+        if (pos < 0) continue;
+
+        // Wrap the match in a temporary <mark id="bg-sq"> for scrolling
+        var parent = node.parentNode;
+        if (!parent || parent.nodeName === "SCRIPT" || parent.nodeName === "STYLE") continue;
+
+        var before = document.createTextNode(text.slice(0, pos));
+        var mark = document.createElement("mark");
+        mark.id = "bg-sq";
+        mark.textContent = text.slice(pos, pos + q.length);
+        var after = document.createTextNode(text.slice(pos + q.length));
+
+        parent.insertBefore(before, node);
+        parent.insertBefore(mark, node);
+        parent.insertBefore(after, node);
+        parent.removeChild(node);
+
+        mark.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+    }
+
+    // Give KaTeX / page content time to render
+    if (document.readyState === "complete") {
+      setTimeout(findAndScroll, 120);
+    } else {
+      window.addEventListener("load", function () { setTimeout(findAndScroll, 120); });
+    }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -443,7 +609,7 @@
     initSearch();
     initPagination();
     initResize();
-    initSearchScrollToQuery();
+    initSearchHighlight();
   });
 })();
 
