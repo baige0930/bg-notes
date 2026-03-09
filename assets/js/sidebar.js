@@ -416,6 +416,8 @@
     var MAX_W = 520;
 
     var root = document.documentElement;
+    var sidebarEl = document.querySelector(".bg-sidebar");
+    var tocEl     = document.querySelector(".bg-sidebar-toc");
     var sidebarHandle = document.getElementById("bg-sidebar-resize");
     var tocHandle     = document.getElementById("bg-toc-resize");
 
@@ -448,8 +450,10 @@
       sidebarHandle.addEventListener("mousedown", function (e) {
         e.preventDefault();
         sidebarHandle.classList.add("is-dragging");
+        // Disable transition during drag for instant response
+        if (sidebarEl) sidebarEl.style.transition = "none";
         var startX   = e.clientX;
-        var startW   = parseInt(getComputedStyle(root).getPropertyValue("--bg-sidebar-width"), 10) || 260;
+        var startW   = sidebarEl ? sidebarEl.offsetWidth : 260;
 
         function onMove(ev) {
           var newW = startW + (ev.clientX - startX);
@@ -457,6 +461,8 @@
         }
         function onUp() {
           sidebarHandle.classList.remove("is-dragging");
+          // Re-enable transition after drag ends
+          if (sidebarEl) sidebarEl.style.transition = "";
           document.removeEventListener("mousemove", onMove);
           document.removeEventListener("mouseup", onUp);
           var finalW = parseInt(getComputedStyle(root).getPropertyValue("--bg-sidebar-width"), 10);
@@ -472,8 +478,10 @@
       tocHandle.addEventListener("mousedown", function (e) {
         e.preventDefault();
         tocHandle.classList.add("is-dragging");
+        // Disable transition during drag for instant response
+        if (tocEl) tocEl.style.transition = "none";
         var startX   = e.clientX;
-        var startW   = parseInt(getComputedStyle(root).getPropertyValue("--bg-toc-width"), 10) || 230;
+        var startW   = tocEl ? tocEl.offsetWidth : 230;
 
         function onMove(ev) {
           // Moving handle left → wider TOC
@@ -482,6 +490,8 @@
         }
         function onUp() {
           tocHandle.classList.remove("is-dragging");
+          // Re-enable transition after drag ends
+          if (tocEl) tocEl.style.transition = "";
           document.removeEventListener("mousemove", onMove);
           document.removeEventListener("mouseup", onUp);
           var finalW = parseInt(getComputedStyle(root).getPropertyValue("--bg-toc-width"), 10);
