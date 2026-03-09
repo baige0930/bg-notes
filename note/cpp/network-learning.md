@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: page
 title: "计算机网络学习记录：TCP/IP 基础"
 date: 2026-03-09
 ---

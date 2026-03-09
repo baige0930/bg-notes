@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: page
 title: "C++ 学习记录：基础与常见坑"
 date: 2026-03-09
 ---

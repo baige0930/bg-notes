@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: page
 title: "计算机组成原理学习记录：指令、流水线与存储层次"
 date: 2026-03-09
 ---

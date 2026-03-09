@@ -2,5 +2,13 @@
 layout: default
 ---
 
-{{ content }}
+{% if page.title %}
+<div class="bg-article-header">
+  <h1>{{ page.title }}</h1>
+  {% if page.date %}
+    <span class="bg-article-date">📅 {{ page.date | date: "%Y-%m-%d" }}</span>
+  {% endif %}
+</div>
+{% endif %}
 
+{{ content }}

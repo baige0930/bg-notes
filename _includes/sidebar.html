@@ -1,8 +1,9 @@
 <aside class="bg-sidebar" aria-label="Sidebar" data-search-index-url="{{ '/search.json' | relative_url }}">
   <div class="bg-sidebar__inner">
     <div class="bg-sidebar__topbar">
-      <button id="bg-sidebar-toggle" class="bg-btn" type="button" aria-expanded="true" aria-controls="bg-sidebar-panels">
-        Sidebar
+      <a class="bg-sidebar__brand" href="{{ '/' | relative_url }}">bg-notes</a>
+      <button id="bg-sidebar-toggle" class="bg-btn" type="button" aria-expanded="true" aria-controls="bg-sidebar-panels" title="收起侧边栏">
+        ☰
       </button>
     </div>
 
@@ -10,11 +11,11 @@
       <section class="bg-panel" data-panel="search">
         <div class="bg-panel__header">
           <button class="bg-panel__toggle bg-btn-link" type="button" data-panel-toggle="search" aria-expanded="true">
-            Search
+            搜索
           </button>
         </div>
         <div class="bg-panel__body" data-panel-body="search">
-          <input id="bg-search-input" class="bg-search-input" type="search" placeholder="Search..." autocomplete="off" />
+          <input id="bg-search-input" class="bg-search-input" type="search" placeholder="搜索笔记..." autocomplete="off" />
           <div id="bg-search-results" class="bg-search-results" aria-live="polite"></div>
         </div>
       </section>
@@ -22,7 +23,7 @@
       <section class="bg-panel" data-panel="nav">
         <div class="bg-panel__header">
           <button class="bg-panel__toggle bg-btn-link" type="button" data-panel-toggle="nav" aria-expanded="true">
-            Notes
+            笔记目录
           </button>
         </div>
         <div class="bg-panel__body" data-panel-body="nav">

@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: page
 title: "神经网络学习记录：从感知机到反向传播"
 date: 2026-03-09
 ---

@@ -88,7 +88,7 @@
 
     var headings = $all("h2, h3", contentRoot);
     if (!headings.length) {
-      tocRoot.innerHTML = "<div style='color: rgba(0,0,0,.6)'>No headings</div>";
+      tocRoot.innerHTML = "<div style='color: rgba(0,0,0,.6)'>暂无标题</div>";
       return;
     }
 
@@ -228,7 +228,7 @@
         return;
       }
       if (!items.length) {
-        results.innerHTML = "<div style='color: rgba(0,0,0,.6)'>No results</div>";
+        results.innerHTML = "<div style='color: rgba(0,0,0,.6)'>没有找到相关内容</div>";
         return;
       }
       var html = items
@@ -322,7 +322,7 @@
 
         pager.innerHTML = "";
         var prev = document.createElement("button");
-        prev.textContent = "Prev";
+        prev.textContent = "← 上一页";
         prev.disabled = current <= 1;
         prev.addEventListener("click", function () {
           if (current > 1) {
@@ -332,10 +332,10 @@
         });
 
         var info = document.createElement("span");
-        info.textContent = "Page " + current + " / " + total;
+        info.textContent = "第 " + current + " 页，共 " + total + " 页";
 
         var next = document.createElement("button");
-        next.textContent = "Next";
+        next.textContent = "下一页 →";
         next.disabled = current >= total;
         next.addEventListener("click", function () {
           if (current < total) {
