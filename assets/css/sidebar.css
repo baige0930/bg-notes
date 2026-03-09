@@ -491,6 +491,14 @@ html, body {
   overflow: hidden;
 }
 
+/* Search keyword highlight (in search results only) */
+.bg-search-results__snippet mark {
+  background: #aef5e9;
+  color: inherit;
+  padding: 0 0.15em;
+  border-radius: 0.15em;
+}
+
 /* Nav tree */
 .bg-nav,
 .bg-toc ol,
