@@ -82,7 +82,7 @@
   }
 
   function buildToc() {
-    var tocRoot = $("#bg-toc");
+    var tocRoot = $("#bg-toc-right");
     var contentRoot = $("#page-content");
     if (!tocRoot || !contentRoot) return;
 
@@ -293,11 +293,72 @@
     );
   }
 
+  function initPagination() {
+    var lists = $all("[data-bg-paginate='true']");
+    if (!lists.length) return;
+
+    lists.forEach(function (list) {
+      var listId = list.id;
+      if (!listId) return;
+      var pageSizeAttr = list.getAttribute("data-bg-page-size");
+      var pageSize = parseInt(pageSizeAttr || "10", 10);
+      if (!(pageSize > 0)) pageSize = 10;
+
+      var items = $all("li", list);
+      if (items.length <= pageSize) return;
+
+      var pager = $("[data-bg-pagination-for='" + listId + "']");
+      if (!pager) return;
+
+      var current = 1;
+      var total = Math.ceil(items.length / pageSize);
+
+      function renderPage() {
+        var start = (current - 1) * pageSize;
+        var end = start + pageSize;
+        items.forEach(function (el, idx) {
+          el.style.display = idx >= start && idx < end ? "" : "none";
+        });
+
+        pager.innerHTML = "";
+        var prev = document.createElement("button");
+        prev.textContent = "Prev";
+        prev.disabled = current <= 1;
+        prev.addEventListener("click", function () {
+          if (current > 1) {
+            current -= 1;
+            renderPage();
+          }
+        });
+
+        var info = document.createElement("span");
+        info.textContent = "Page " + current + " / " + total;
+
+        var next = document.createElement("button");
+        next.textContent = "Next";
+        next.disabled = current >= total;
+        next.addEventListener("click", function () {
+          if (current < total) {
+            current += 1;
+            renderPage();
+          }
+        });
+
+        pager.appendChild(prev);
+        pager.appendChild(info);
+        pager.appendChild(next);
+      }
+
+      renderPage();
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initSidebarCollapse();
     initPanelCollapse();
     buildToc();
     initSearch();
+    initPagination();
   });
 })();
 

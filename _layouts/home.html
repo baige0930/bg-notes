@@ -1,0 +1,29 @@
+---
+layout: default
+---
+
+<section class="bg-article-section">
+  <h2>全部文章</h2>
+
+  {% comment %}
+    这里把所有 /note/** 下的页面视为“文章”，按 date 倒序排列。
+    为了兼容 GitHub Pages 的 Liquid 版本，采用简单的 sort + reversed + if 过滤。
+  {% endcomment %}
+  {% assign pages_sorted = site.pages | sort: "date" %}
+
+  <ul id="bg-home-list" class="bg-article-list" data-bg-paginate="true" data-bg-page-size="10">
+    {% for p in pages_sorted reversed %}
+      {% if p.title and p.url and p.url contains '/note/' and p.name != 'index.md' %}
+        <li class="bg-article-item">
+          <a class="bg-article-title" href="{{ p.url | relative_url }}">{{ p.title }}</a>
+          {% if p.date %}
+            <span class="bg-article-meta">{{ p.date | date: "%Y-%m-%d" }}</span>
+          {% endif %}
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+
+  <div id="bg-home-pagination" class="bg-pagination" data-bg-pagination-for="bg-home-list"></div>
+</section>
+

@@ -1,0 +1,32 @@
+---
+layout: default
+---
+
+<section class="bg-article-section">
+  <h2>{{ page.title }}</h2>
+
+  {% comment %}
+    当前文件夹 index 页：列出同一目录及其子目录下的所有文章。
+    以 page.url 为前缀（例如 /note/），过滤出对应页面，按 date 倒序。
+  {% endcomment %}
+  {% assign base = page.url %}
+  {% assign pages_sorted = site.pages | sort: "date" %}
+
+  {% assign list_id = page.url | slugify | prepend: 'bg-folder-list-' %}
+
+  <ul id="{{ list_id }}" class="bg-article-list" data-bg-paginate="true" data-bg-page-size="10">
+    {% for p in pages_sorted reversed %}
+      {% if p.title and p.url and p.url != page.url and p.url contains base and p.name != 'index.md' %}
+        <li class="bg-article-item">
+          <a class="bg-article-title" href="{{ p.url | relative_url }}">{{ p.title }}</a>
+          {% if p.date %}
+            <span class="bg-article-meta">{{ p.date | date: "%Y-%m-%d" }}</span>
+          {% endif %}
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+
+  <div class="bg-pagination" data-bg-pagination-for="{{ list_id }}"></div>
+</section>
+

@@ -28,29 +28,33 @@
         <div class="bg-panel__body" data-panel-body="nav">
           <ul class="bg-nav">
             {% comment %}
-            Older GitHub Pages Liquid 对 where_exp 支持有限，
-            这里用简单的遍历 + 条件判断来筛选 /note/** 下的页面。
+              分级导航：
+              - 先找出 /note/** 下的各个文件夹 index.md 作为“组”（排除 /note/ 自身）
+              - 再为每个组列出该目录里的具体文章（非 index.md）
             {% endcomment %}
-            {% assign all_pages = site.pages | sort: "title" %}
-            {% for p in all_pages %}
-              {% if p.title and p.url and p.name != 'index.md' and p.url contains '/note/' %}
-                <li class="bg-nav__item">
-                  <a class="bg-nav__link {% if page.url == p.url %}is-active{% endif %}" href="{{ p.url | relative_url }}">{{ p.title }}</a>
+            {% assign pages_all = site.pages | sort: "title" %}
+
+            {% for folder in pages_all %}
+              {% if folder.title and folder.url and folder.url contains '/note/' and folder.url != '/note/' and folder.name == 'index.md' %}
+                <li class="bg-nav__group">
+                  <div class="bg-nav__group-title">
+                    <a class="bg-nav__group-link {% if page.url == folder.url %}is-active{% endif %}" href="{{ folder.url | relative_url }}">
+                      {{ folder.title }}
+                    </a>
+                  </div>
+                  <ul class="bg-nav bg-nav--children">
+                    {% for p in pages_all %}
+                      {% if p.title and p.url and p.url != folder.url and p.url contains folder.url and p.name != 'index.md' %}
+                        <li class="bg-nav__item">
+                          <a class="bg-nav__link {% if page.url == p.url %}is-active{% endif %}" href="{{ p.url | relative_url }}">{{ p.title }}</a>
+                        </li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
                 </li>
               {% endif %}
             {% endfor %}
           </ul>
-        </div>
-      </section>
-
-      <section class="bg-panel" data-panel="toc">
-        <div class="bg-panel__header">
-          <button class="bg-panel__toggle bg-btn-link" type="button" data-panel-toggle="toc" aria-expanded="true">
-            On this page
-          </button>
-        </div>
-        <div class="bg-panel__body" data-panel-body="toc">
-          <nav id="bg-toc" class="bg-toc" aria-label="Table of contents"></nav>
         </div>
       </section>
     </div>

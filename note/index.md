@@ -1,9 +1,7 @@
 ---
-layout: default
-title: "杂记"
+layout: folder_index
+title: "笔记"
 ---
 
-不方便归类的记录放这里。
-
-- 示例：`读书-xxx.md`
+这里列出 `note/` 目录下的所有笔记。
 
