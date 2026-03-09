@@ -601,6 +601,28 @@
     }
   }
 
+  function initBackToTop() {
+    var btn = document.getElementById("bg-back-to-top");
+    var target = document.getElementById("page-content");
+    if (!btn) return;
+
+    // Show button after scrolling down 300px inside the content wrapper
+    var scroller = document.querySelector(".bg-content-wrapper") || window;
+    function onScroll() {
+      var scrollY = (scroller === window) ? window.scrollY : scroller.scrollTop;
+      btn.classList.toggle("is-visible", scrollY > 300);
+    }
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+
+    btn.addEventListener("click", function () {
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initSidebarCollapse();
     initPanelCollapse();
@@ -610,6 +632,7 @@
     initPagination();
     initResize();
     initSearchHighlight();
+    initBackToTop();
   });
 })();
 

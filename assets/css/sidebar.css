@@ -790,6 +790,39 @@ html, body {
 #skip-to-content:focus { top: 0; }
 
 /* =====================================================
+   Back-to-top button
+   ===================================================== */
+.bg-back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 500;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--bg-border);
+  background: var(--bg-surface);
+  color: var(--bg-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--bg-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, background var(--bg-transition), color var(--bg-transition), border-color var(--bg-transition);
+}
+.bg-back-to-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.bg-back-to-top:hover {
+  background: var(--bg-accent-light);
+  color: var(--bg-accent);
+  border-color: var(--bg-accent);
+}
+
+/* =====================================================
    Stats Bar (home & folder_index)
    ===================================================== */
 .bg-stats-bar {
