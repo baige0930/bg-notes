@@ -592,23 +592,26 @@
 
   function initBackToTop() {
     var btn = document.getElementById("bg-back-to-top");
-    var target = document.getElementById("page-content");
     if (!btn) return;
 
-    // Show button after scrolling down 300px inside the content wrapper
-    var scroller = document.querySelector(".bg-content-wrapper") || window;
-    function onScroll() {
-      var scrollY = (scroller === window) ? window.scrollY : scroller.scrollTop;
-      btn.classList.toggle("is-visible", scrollY > 300);
+    // Show when the page-header is no longer visible (has scrolled out of view)
+    var header = document.querySelector(".page-header");
+    if (header && "IntersectionObserver" in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        // header not intersecting → user has scrolled past it
+        btn.classList.toggle("is-visible", !entries[0].isIntersecting);
+      }, { threshold: 0 });
+      observer.observe(header);
+    } else {
+      // Fallback: simple scroll position check
+      window.addEventListener("scroll", function () {
+        btn.classList.toggle("is-visible", window.scrollY > 80);
+      }, { passive: true });
     }
-    scroller.addEventListener("scroll", onScroll, { passive: true });
 
     btn.addEventListener("click", function () {
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-      } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
+      // Scroll the whole page to top (shows the header again)
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
 
