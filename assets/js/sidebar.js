@@ -565,7 +565,7 @@
       var content = document.getElementById("page-content");
       if (!content) return;
 
-      // Walk text nodes
+      // Walk text nodes to find first match, then scroll to that element
       var walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
       var node;
       while ((node = walker.nextNode())) {
@@ -573,22 +573,11 @@
         var pos = text.toLowerCase().indexOf(q);
         if (pos < 0) continue;
 
-        // Wrap the match in a temporary <mark id="bg-sq"> for scrolling
         var parent = node.parentNode;
         if (!parent || parent.nodeName === "SCRIPT" || parent.nodeName === "STYLE") continue;
 
-        var before = document.createTextNode(text.slice(0, pos));
-        var mark = document.createElement("mark");
-        mark.id = "bg-sq";
-        mark.textContent = text.slice(pos, pos + q.length);
-        var after = document.createTextNode(text.slice(pos + q.length));
-
-        parent.insertBefore(before, node);
-        parent.insertBefore(mark, node);
-        parent.insertBefore(after, node);
-        parent.removeChild(node);
-
-        mark.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Just scroll to the containing element — no highlight injected
+        parent.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
     }
