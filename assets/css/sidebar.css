@@ -38,8 +38,86 @@
 }
 
 /* =====================================================
-   Base overrides (Cayman theme)
+   Page header corner buttons (Home + GitHub)
    ===================================================== */
+.page-header {
+  position: relative;
+}
+
+.page-header__corner-btns {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.header-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--bg-radius);
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.header-icon-btn:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.4);
+}
+
+/* =====================================================
+   Nav group chevron (collapse/expand)
+   ===================================================== */
+.bg-nav__group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.bg-nav__chevron {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--bg-text-subtle);
+  font-size: 0.9rem;
+  line-height: 1;
+  border-radius: var(--bg-radius-sm);
+  transition: color var(--bg-transition), transform var(--bg-transition);
+  transform: rotate(90deg); /* › pointing down = expanded */
+}
+
+.bg-nav__chevron:hover {
+  color: var(--bg-text-muted);
+  background: var(--bg-surface-2);
+}
+
+/* When group is collapsed, chevron points right */
+.bg-nav__group.is-collapsed .bg-nav__chevron {
+  transform: rotate(0deg);
+}
+
+/* Hide children when collapsed */
+.bg-nav__group.is-collapsed .bg-nav--children {
+  display: none;
+}
+
+
 /* DO NOT override body font/color — Cayman's own styles are kept as-is */
 
 /* Header: only override padding to inset content away from sidebars.

@@ -106,6 +106,28 @@
     });
   }
 
+  function initNavGroupCollapse() {
+    var groups = $all(".bg-nav__group");
+    groups.forEach(function (group) {
+      var chevron = group.querySelector(".bg-nav__chevron");
+      if (!chevron) return;
+
+      // Use folder URL as stable key
+      var link = group.querySelector(".bg-nav__group-link");
+      var key = "bg_navgroup_" + (link ? link.getAttribute("href") : "") + "_collapsed";
+
+      // Restore saved state; default = expanded (false)
+      var collapsed = loadState(key, false);
+      if (collapsed) group.classList.add("is-collapsed");
+
+      chevron.addEventListener("click", function (e) {
+        e.stopPropagation();
+        group.classList.toggle("is-collapsed");
+        saveState(key, group.classList.contains("is-collapsed"));
+      });
+    });
+  }
+
   function buildToc() {
     var tocRoot = $("#bg-toc-right");
     var contentRoot = $("#page-content");
@@ -474,6 +496,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     initSidebarCollapse();
     initPanelCollapse();
+    initNavGroupCollapse();
     buildToc();
     initSearch();
     initPagination();

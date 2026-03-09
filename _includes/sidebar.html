@@ -40,6 +40,7 @@
               {% if folder.title and folder.url and folder.url contains '/note/' and folder.url != '/note/' and folder.name == 'index.md' %}
                 <li class="bg-nav__group">
                   <div class="bg-nav__group-title">
+                    <button class="bg-nav__chevron" type="button" aria-label="折叠/展开" title="折叠/展开">&#8250;</button>
                     <a class="bg-nav__group-link {% if page.url == folder.url %}is-active{% endif %}" href="{{ folder.url | relative_url }}">
                       {{ folder.title }}
                     </a>
