@@ -1,7 +1,7 @@
 ---
-layout: folder_index
+layout: index
 title: "C++ 笔记"
-nav_expand: all
+expand: all
 ---
 
 这里是 C++ 相关的学习记录与笔记。

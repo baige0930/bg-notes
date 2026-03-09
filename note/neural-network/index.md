@@ -1,5 +1,5 @@
 ---
-layout: folder_index
+layout: index
 title: "神经网络笔记"
 ---
 

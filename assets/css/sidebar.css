@@ -151,11 +151,12 @@
   align-items: flex-start;
 }
 
-/* Floating open button — visible only when sidebar is hidden */
+/* Open button — lives inside .bg-sidebar so it sticks with the page naturally.
+   Normally hidden; when sidebar is collapsed it pokes out to the right. */
 .bg-sidebar-open-btn {
-  position: fixed;
+  position: absolute;
   top: 48px;
-  left: 0;
+  right: -23px;          /* poke out beyond the sidebar's right edge */
   z-index: 101;
   width: 22px;
   height: 44px;
@@ -222,15 +223,21 @@
 .bg-sidebar::-webkit-scrollbar-track { background: transparent; }
 .bg-sidebar::-webkit-scrollbar-thumb { background: var(--bg-border); border-radius: 4px; }
 
-/* Collapsed: zero width (slide out) */
+/* Collapsed: zero width, but overflow visible so the open button can poke out */
 .bg-sidebar.is-collapsed {
   width: 0;
+  min-width: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   border-right: none;
   box-shadow: none;
 }
 .bg-sidebar.is-collapsed #bg-sidebar-toggle { visibility: hidden; }
+/* Hide all inner content except the open button */
+.bg-sidebar.is-collapsed .bg-sidebar__inner { display: none; }
+.bg-sidebar.is-collapsed .bg-sidebar-resize-handle { display: none; }
+/* Show open button only when collapsed */
+.bg-sidebar.is-collapsed .bg-sidebar-open-btn { display: block; }
 
 /* Right TOC — sticky on the right */
 .bg-sidebar-toc {
@@ -295,11 +302,13 @@
 }
 
 /* =====================================================
-   Prose typography — intentionally empty.
-   Cayman's own .main-content styles handle all headings,
-   paragraphs, links, lists, blockquotes, tables, and code.
-   We do NOT override them here.
+   Prose typography — body text color override.
+   Cayman uses #606c71 (grey) for body text; override to near-black for readability.
+   blockquote, code, headings, links, and sidebar UI are intentionally excluded.
    ===================================================== */
+.bg-content.main-content {
+  color: #222;
+}
 
 /* =====================================================
    Sidebar inner components
@@ -562,9 +571,9 @@
 .bg-article-section { margin-bottom: 2rem; }
 
 .bg-article-section > h2 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--bg-text);
+  font-size: 1.5rem;
+  font-weight: normal;
+  color: #159957;
   margin-top: 0;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;

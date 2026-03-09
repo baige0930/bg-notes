@@ -33,7 +33,7 @@ title: "首页标题"
 
 ---
 
-### `layout: folder_index`
+### `layout: index`
 
 用于每个文件夹的 `index.md`，显示该文件夹下的文章列表。  
 `index.md` 的正文内容会渲染在列表上方。
@@ -43,21 +43,20 @@ title: "首页标题"
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `title` | string | 文件夹标题，显示在列表标题和侧边栏导航中 |
-| `nav_expand` | string | 控制该节点在侧边栏的默认展开状态（见下） |
+| `expand` | string | 控制该节点在侧边栏的默认展开状态（见下） |
 
-**`nav_expand` 可选值：**
+**`expand` 可选值：**
 
 | 值 | 效果 |
 |---|---|
 | `all`（默认，不填即为此值） | 侧边栏默认展开显示所有子页面 |
 | `none` | 侧边栏默认折叠，用户可手动点击展开 |
-| `1` | 同 `none`，默认折叠 |
 
 ```yaml
 ---
-layout: folder_index
+layout: index
 title: "C++ 笔记"
-nav_expand: none
+expand: none
 ---
 
 这里是可选的文件夹简介，会渲染在文章列表上方。

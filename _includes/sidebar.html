@@ -1,7 +1,7 @@
-<button id="bg-sidebar-open-btn" class="bg-sidebar-open-btn" type="button" aria-label="展开侧边栏" title="展开侧边栏">›</button>
-
 <aside class="bg-sidebar" aria-label="Sidebar" data-search-index-url="{{ '/search.json' | relative_url }}">
   <div class="bg-sidebar-resize-handle" id="bg-sidebar-resize" title="拖动调整宽度"></div>
+  <!-- Open button: lives inside the sticky sidebar so it moves with the page naturally -->
+  <button id="bg-sidebar-open-btn" class="bg-sidebar-open-btn" type="button" aria-label="展开侧边栏" title="展开侧边栏">›</button>
   <div class="bg-sidebar__inner">
     <div class="bg-sidebar__topbar">
       <a class="bg-sidebar__brand" href="{{ '/' | relative_url }}">bg-notes</a>
@@ -38,8 +38,8 @@
 
             {% for folder in pages_all %}
               {% if folder.title and folder.url and folder.url contains '/note/' and folder.url != '/note/' and folder.name == 'index.md' %}
-                {% assign nav_expand = folder.nav_expand | default: "all" %}
-                <li class="bg-nav__group" data-nav-expand="{{ nav_expand }}">
+                {% assign expand = folder.expand | default: "all" %}
+                <li class="bg-nav__group" data-nav-expand="{{ expand }}">
                   <div class="bg-nav__group-title">
                     <button class="bg-nav__chevron" type="button" aria-label="折叠/展开" title="折叠/展开">&#8250;</button>
                     <a class="bg-nav__group-link {% if page.url == folder.url %}is-active{% endif %}" href="{{ folder.url | relative_url }}">

@@ -52,11 +52,9 @@
       if (collapsed) {
         sidebar.classList.add("is-collapsed");
         setExpanded(btn, false);
-        if (openBtn) openBtn.style.display = "block";
       } else {
         sidebar.classList.remove("is-collapsed");
         setExpanded(btn, true);
-        if (openBtn) openBtn.style.display = "none";
       }
     }
 
@@ -115,7 +113,7 @@
       var link = group.querySelector(".bg-nav__group-link");
       var key = "bg_navgroup_" + (link ? link.getAttribute("href") : "") + "_collapsed";
 
-      // Read the nav_expand setting rendered from front matter:
+      // Read the expand setting rendered from front matter:
       //   "all"  (default) → expanded, ignore localStorage
       //   "none"           → collapsed by default, but user can override via localStorage
       //   "1"              → same as "none" for now (one level: group visible, children hidden)
