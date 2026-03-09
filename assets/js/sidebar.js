@@ -37,53 +37,45 @@
     btn.setAttribute("aria-expanded", expanded ? "true" : "false");
   }
 
-  function updateSidebarTop() {
-    var header = document.querySelector(".page-header");
-    if (!header) return;
+  // Cached element references — populated once on DOMContentLoaded
+  var _header = null;
+  var _sidebar = null;
+  var _toc = null;
+  var _openBtn = null;
+  var _sidebarHandle = null;
+  var _tocHandle = null;
+  var _rafPending = false;
 
-    var headerH = header.offsetHeight;
-    // Set --bg-header-height once (used for initial layout before scroll)
+  function _applyTop() {
+    _rafPending = false;
+    if (!_header) return;
+
+    var headerH = _header.offsetHeight;
     document.documentElement.style.setProperty("--bg-header-height", headerH + "px");
 
-    // How far the bottom of the header is from the viewport top.
-    // This equals (headerH - scrollY), clamped to [0, headerH].
     var scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
     var top = Math.max(0, headerH - scrollY);
     var h = "calc(100vh - " + top + "px)";
 
-    // Apply directly to elements — no CSS variable indirection, no transition lag.
-    var sidebar = document.querySelector(".bg-sidebar");
-    var toc = document.querySelector(".bg-sidebar-toc");
-    var openBtn = document.querySelector(".bg-sidebar-open-btn");
-    var sidebarHandle = document.getElementById("bg-sidebar-resize");
-    var tocHandle = document.getElementById("bg-toc-resize");
+    if (_sidebar)       { _sidebar.style.top       = top + "px"; _sidebar.style.height       = h; }
+    if (_toc)           { _toc.style.top            = top + "px"; _toc.style.height            = h; }
+    if (_openBtn)       { _openBtn.style.top        = (top + 48) + "px"; }
+    if (_sidebarHandle) { _sidebarHandle.style.top  = top + "px"; _sidebarHandle.style.height  = h; }
+    if (_tocHandle)     { _tocHandle.style.top      = top + "px"; _tocHandle.style.height      = h; }
+  }
 
-    if (sidebar) {
-      sidebar.style.top = top + "px";
-      sidebar.style.height = h;
-    }
-    if (toc) {
-      toc.style.top = top + "px";
-      toc.style.height = h;
-    }
-    if (openBtn) {
-      openBtn.style.top = (top + 48) + "px";
-    }
-    // Keep fixed resize handles in sync with sidebar top/height
-    if (sidebarHandle) {
-      sidebarHandle.style.top = top + "px";
-      sidebarHandle.style.height = h;
-    }
-    if (tocHandle) {
-      tocHandle.style.top = top + "px";
-      tocHandle.style.height = h;
+  function updateSidebarTop() {
+    // Schedule exactly one rAF per scroll burst — keeps DOM writes
+    // in sync with the browser's paint cycle and eliminates the
+    // one-frame lag that causes sidebars to overlap the header.
+    if (!_rafPending) {
+      _rafPending = true;
+      requestAnimationFrame(_applyTop);
     }
   }
 
   function scheduleHeaderHeight() {
-    requestAnimationFrame(function () {
-      updateSidebarTop();
-    });
+    requestAnimationFrame(_applyTop);
   }
 
   function initSidebarCollapse() {
@@ -533,9 +525,17 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    // Cache element references once so scroll handler never touches the DOM query engine
+    _header       = document.querySelector(".page-header");
+    _sidebar      = document.querySelector(".bg-sidebar");
+    _toc          = document.querySelector(".bg-sidebar-toc");
+    _openBtn      = document.querySelector(".bg-sidebar-open-btn");
+    _sidebarHandle = document.getElementById("bg-sidebar-resize");
+    _tocHandle    = document.getElementById("bg-toc-resize");
+
     scheduleHeaderHeight();
     window.addEventListener("scroll", updateSidebarTop, { passive: true });
-    window.addEventListener("resize", updateSidebarTop);
+    window.addEventListener("resize", function () { _rafPending = false; _applyTop(); });
     initSidebarCollapse();
     initPanelCollapse();
     buildToc();
