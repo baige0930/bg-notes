@@ -27,12 +27,13 @@
         </div>
         <div class="bg-panel__body" data-panel-body="nav">
           <ul class="bg-nav">
-            {% comment %}Include all pages under /note/** (including subfolders).{% endcomment %}
-            {% assign note_pages = site.pages | where_exp: "p", "p.dir and (p.dir | slice: 0, 6) == '/note/'" %}
-            {% assign note_pages = note_pages | where_exp: "p", "p.name != 'index.md'" %}
-            {% assign note_pages = note_pages | sort: "title" %}
-            {% for p in note_pages %}
-              {% if p.title %}
+            {% comment %}
+            Older GitHub Pages Liquid 对 where_exp 支持有限，
+            这里用简单的遍历 + 条件判断来筛选 /note/** 下的页面。
+            {% endcomment %}
+            {% assign all_pages = site.pages | sort: "title" %}
+            {% for p in all_pages %}
+              {% if p.title and p.url and p.name != 'index.md' and p.url contains '/note/' %}
                 <li class="bg-nav__item">
                   <a class="bg-nav__link {% if page.url == p.url %}is-active{% endif %}" href="{{ p.url | relative_url }}">{{ p.title }}</a>
                 </li>
