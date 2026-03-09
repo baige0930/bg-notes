@@ -414,8 +414,6 @@ html, body {
 /* Search */
 .bg-search-input {
   width: 100%;
-  display: block;
-  max-width: 100%;
   box-sizing: border-box;
   border: 1px solid var(--bg-border);
   border-radius: var(--bg-radius-sm);
@@ -426,14 +424,6 @@ html, body {
   color: var(--bg-text);
   transition: border-color var(--bg-transition), box-shadow var(--bg-transition);
   outline: none;
-}
-
-/* Ensure panel body doesn't allow inputs to visually overflow */
-.bg-panel [data-panel-body] {
-  max-width: 100%;
-  /* overflow hidden 会把 input 的右侧边框/阴影裁掉，去掉它 */
-  overflow: visible;
-  box-sizing: border-box;
 }
 
 .bg-search-input:focus {
