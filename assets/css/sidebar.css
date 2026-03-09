@@ -834,3 +834,22 @@ html, body {
   display: block;
   margin-bottom: 0.5rem;
 }
+
+/* =====================================================
+   Prose links — only inside article content (exclude generated lists)
+   ===================================================== */
+.bg-content.main-content #page-content a {
+  color: #159957; /* match Cayman title green */
+}
+
+.bg-content.main-content #page-content a:hover,
+.bg-content.main-content #page-content a:focus {
+  color: #aef5e9;
+}
+
+/* Keep article lists (home/index) using their own styles */
+.bg-content.main-content #page-content .bg-article-list a,
+.bg-content.main-content #page-content .bg-article-list a:hover,
+.bg-content.main-content #page-content .bg-article-list a:focus {
+  color: inherit;
+}

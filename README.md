@@ -1,84 +1,115 @@
 # bg-notes
 
-基于 Jekyll + Cayman 主题的个人笔记站点，在 Cayman 原有样式基础上增加了双侧边栏、折叠导航、目录等功能。
+基于 **Jekyll + Cayman** 的个人笔记站点。
+
+- 不改 Cayman 的整体视觉风格（渐变头、排版、字体等），只在其基础上补齐「更适合笔记站」的导航、目录、搜索与列表体验。
+- 页面可以直接部署到 **GitHub Pages**。
 
 > 如果不需要本地预览：直接把代码推送到 GitHub（GitHub Pages）即可生成站点，无需安装任何本地插件或额外依赖。
 
 ---
 
-## 与原版 Cayman 的主要改动
+## 在 Cayman 基础上的主要增强（精简版）
 
-- **双侧边栏**：左侧为笔记导航栏，右侧为当前页面目录（TOC），均使用 `position: sticky` 跟随页面滚动，无 JS 延迟
-- **导航节点可折叠**：每个文件夹节点左侧有箭头按钮，点击可折叠/展开，状态持久化到 `localStorage`
-- **右侧 TOC**：自动从页面 `h2`/`h3` 标题生成，滚动时高亮当前节点
-- **侧边栏宽度可拖拽调整**：拖动边缘 handle 改变宽度，宽度保存到 `localStorage`
-- **Header 右上角图标**：Home 按钮 + GitHub 仓库链接（SVG 图标，替代原版文字按钮）
-- **Cayman 原有样式完整保留**：字体、配色、渐变头、正文排版均未覆盖
+- **三栏布局**：左侧“笔记导航栏” + 中间正文 + 右侧“本页目录（TOC）”。两侧栏使用 `position: sticky`，滚动同步无延迟。
+- **左侧导航（支持折叠）**：自动扫描 `/note/**/index.md` 作为分组，组内列出文章；支持折叠/展开，状态保存到 `localStorage`。
+- **右侧 TOC（桌面端）**：自动从正文 `h2/h3` 生成，本页滚动时高亮当前位置；移动端默认隐藏。
+- **拖拽调整宽度**：左右侧栏都可以拖拽调整宽度，宽度持久化到 `localStorage`；拖拽时禁用动画以保证跟手。
+- **搜索**：侧边栏内置搜索框，基于 `search.json` 在前端检索。
+- **列表页分页**：首页与文件夹列表页支持前端分页。
+- **数学公式**：默认引入 KaTeX，支持 `$...$`/`$$...$$` 自动渲染。
+- **Header 角落按钮**：右上角 Home + GitHub 图标按钮。
 
-自定义样式文件：`assets/css/sidebar.css`  
-自定义脚本文件：`assets/js/sidebar.js`
+自定义文件：
+- 样式：`assets/css/sidebar.css`
+- 脚本：`assets/js/sidebar.js`
+- 布局：`_layouts/*.html`
+- 侧边栏结构：`_includes/sidebar.html`
 
 ---
 
-## Layout 说明
+## 内容组织约定
 
-### `layout: home`
+- 所有笔记建议放在 `note/` 下。
+- 每个子目录用一个 `index.md` 作为“文件夹入口页”（同时也是左侧导航的一个分组）。
+- 普通文章是该目录下除 `index.md` 之外的 `.md`。
 
-用于站点首页（`index.md`），显示所有笔记的汇总列表，按日期倒序，支持分页。
+示例：
 
-```yaml
----
-layout: home
-title: "首页标题"
----
+```
+note/
+  diary/
+    index.md           # 文件夹入口页（列表页）
+    2026-03-09.md      # 普通文章
+  cpp/
+    index.md
+    cpp-learning.md
 ```
 
 ---
 
-### `layout: index`
+## 各类 Markdown 如何写（layouts）
 
-用于每个文件夹的 `index.md`，显示该文件夹下的文章列表。  
-`index.md` 的正文内容会渲染在列表上方。
+### 1) 首页：`index.md`（站点根目录）
 
-**Front matter 字段：**
+使用 `layout: home`，会列出站点内所有文章（`/note/` 下非 `index.md` 的页面），自带分页。
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `title` | string | 文件夹标题，显示在列表标题和侧边栏导航中 |
-| `expand` | string | 控制该节点在侧边栏的默认展开状态（见下） |
+```yaml
+---
+layout: home
+title: "bg-notes"
+---
 
-**`expand` 可选值：**
+这里可以写一段站点介绍（可选）。
+```
 
-| 值 | 效果 |
-|---|---|
-| `all`（默认，不填即为此值） | 侧边栏默认展开显示所有子页面 |
-| `none` | 侧边栏默认折叠，用户可手动点击展开 |
+---
+
+### 2) 文件夹入口页：`note/**/index.md`
+
+使用 `layout: index`。
+
+- 页面正文（`content`）会显示在列表上方（可用于写该目录的简介/说明）。
+- 该页面也会成为左侧导航的一个“分组”。
 
 ```yaml
 ---
 layout: index
 title: "C++ 笔记"
-expand: none
+expand: none   # 可选：all(默认) / none
 ---
 
-这里是可选的文件夹简介，会渲染在文章列表上方。
+这里是该分类的简介（可选）。
 ```
 
+`expand` 说明：
+- `all`（默认）：该分组默认展开
+- `none`：该分组默认折叠（用户可手动展开；状态会记到 localStorage）
+
 ---
 
-### `layout: page`
+### 3) 普通文章页：`note/**/xxx.md`
 
-用于普通笔记文章，渲染正文内容，顶部自动显示标题和日期。  
-右侧 TOC 会自动从 `h2`/`h3` 标题生成。
+使用 `layout: page`。
 
 ```yaml
 ---
 layout: page
 title: "文章标题"
-date: 2026-03-09
+date: 2026-03-09   # 可选，但建议写，列表页会展示
 ---
 
-## 小节标题
+## 二级标题（会进入右侧 TOC）
 
 正文内容……
+
+### 三级标题（也会进入右侧 TOC）
+
+更多内容……
 ```
+
+---
+
+## 本地预览（可选）
+
+想本地预览时，用 Jekyll 启动即可（例如 `bundle exec jekyll serve`）。

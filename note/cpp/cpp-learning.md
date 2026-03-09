@@ -8,6 +8,8 @@ date: 2026-03-09
 
 ### 头文件与命名空间
 
+测试，超链接，我的仓库位置[bg-notes](https://github.com/baige0930/bg-notes)
+
 - 只 include 用到的头文件，避免“全家桶”。
 - 头文件里尽量不写 `using namespace std;`。
 
