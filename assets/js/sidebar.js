@@ -49,22 +49,34 @@
     // This equals (headerH - scrollY), clamped to [0, headerH].
     var scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
     var top = Math.max(0, headerH - scrollY);
+    var h = "calc(100vh - " + top + "px)";
 
     // Apply directly to elements — no CSS variable indirection, no transition lag.
     var sidebar = document.querySelector(".bg-sidebar");
     var toc = document.querySelector(".bg-sidebar-toc");
     var openBtn = document.querySelector(".bg-sidebar-open-btn");
+    var sidebarHandle = document.getElementById("bg-sidebar-resize");
+    var tocHandle = document.getElementById("bg-toc-resize");
 
     if (sidebar) {
       sidebar.style.top = top + "px";
-      sidebar.style.height = "calc(100vh - " + top + "px)";
+      sidebar.style.height = h;
     }
     if (toc) {
       toc.style.top = top + "px";
-      toc.style.height = "calc(100vh - " + top + "px)";
+      toc.style.height = h;
     }
     if (openBtn) {
       openBtn.style.top = (top + 48) + "px";
+    }
+    // Keep fixed resize handles in sync with sidebar top/height
+    if (sidebarHandle) {
+      sidebarHandle.style.top = top + "px";
+      sidebarHandle.style.height = h;
+    }
+    if (tocHandle) {
+      tocHandle.style.top = top + "px";
+      tocHandle.style.height = h;
     }
   }
 
@@ -416,6 +428,110 @@
     });
   }
 
+  // ── Drag-to-resize sidebars ──────────────────────────────────────────────
+  function initResize() {
+    var MIN_W = 160;
+    var MAX_W = 520;
+
+    var root = document.documentElement;
+    var sidebarHandle = document.getElementById("bg-sidebar-resize");
+    var tocHandle     = document.getElementById("bg-toc-resize");
+    var sidebar       = document.querySelector(".bg-sidebar");
+    var wrapper       = document.querySelector(".bg-content-wrapper");
+
+    // Restore saved widths
+    var savedSidebar = parseInt(localStorage.getItem("bg-sidebar-width"), 10);
+    var savedToc     = parseInt(localStorage.getItem("bg-toc-width"), 10);
+    if (savedSidebar && savedSidebar >= MIN_W && savedSidebar <= MAX_W) {
+      root.style.setProperty("--bg-sidebar-width", savedSidebar + "px");
+      if (sidebarHandle) sidebarHandle.style.left = savedSidebar + "px";
+    }
+    if (savedToc && savedToc >= MIN_W && savedToc <= MAX_W) {
+      root.style.setProperty("--bg-toc-width", savedToc + "px");
+      if (tocHandle) tocHandle.style.right = savedToc + "px";
+    }
+
+    // Helper: clamp and apply sidebar width, updating handle + wrapper margin
+    function applySidebarWidth(w) {
+      w = Math.min(MAX_W, Math.max(MIN_W, w));
+      root.style.setProperty("--bg-sidebar-width", w + "px");
+      if (sidebarHandle) sidebarHandle.style.left = w + "px";
+      // Only update margin if sidebar is not collapsed
+      if (sidebar && !sidebar.classList.contains("is-collapsed") && wrapper) {
+        wrapper.style.marginLeft = w + "px";
+      }
+      return w;
+    }
+
+    // Helper: clamp and apply TOC width, updating handle + wrapper margin
+    function applyTocWidth(w) {
+      w = Math.min(MAX_W, Math.max(MIN_W, w));
+      root.style.setProperty("--bg-toc-width", w + "px");
+      if (tocHandle) tocHandle.style.right = w + "px";
+      if (wrapper) wrapper.style.marginRight = w + "px";
+      return w;
+    }
+
+    // Left sidebar handle
+    if (sidebarHandle) {
+      sidebarHandle.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        sidebarHandle.classList.add("is-dragging");
+        var startX   = e.clientX;
+        var startW   = parseInt(getComputedStyle(root).getPropertyValue("--bg-sidebar-width"), 10) || 260;
+
+        function onMove(ev) {
+          var newW = startW + (ev.clientX - startX);
+          applySidebarWidth(newW);
+        }
+        function onUp() {
+          sidebarHandle.classList.remove("is-dragging");
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+          var finalW = parseInt(getComputedStyle(root).getPropertyValue("--bg-sidebar-width"), 10);
+          localStorage.setItem("bg-sidebar-width", finalW);
+        }
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+    }
+
+    // Right TOC handle
+    if (tocHandle) {
+      tocHandle.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        tocHandle.classList.add("is-dragging");
+        var startX   = e.clientX;
+        var startW   = parseInt(getComputedStyle(root).getPropertyValue("--bg-toc-width"), 10) || 230;
+
+        function onMove(ev) {
+          // Moving handle left → wider TOC
+          var newW = startW + (startX - ev.clientX);
+          applyTocWidth(newW);
+        }
+        function onUp() {
+          tocHandle.classList.remove("is-dragging");
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+          var finalW = parseInt(getComputedStyle(root).getPropertyValue("--bg-toc-width"), 10);
+          localStorage.setItem("bg-toc-width", finalW);
+        }
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+    }
+
+    // Prevent text selection while dragging
+    document.addEventListener("mousedown", function (e) {
+      if (e.target === sidebarHandle || e.target === tocHandle) {
+        document.body.style.userSelect = "none";
+      }
+    });
+    document.addEventListener("mouseup", function () {
+      document.body.style.userSelect = "";
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     scheduleHeaderHeight();
     window.addEventListener("scroll", updateSidebarTop, { passive: true });
@@ -425,6 +541,7 @@
     buildToc();
     initSearch();
     initPagination();
+    initResize();
   });
 })();
 
