@@ -37,6 +37,12 @@
   --bg-transition: 0.18s ease;
 }
 
+/* Prevent horizontal overflow from stretching body beyond viewport width */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* =====================================================
    Page header corner buttons (Home + GitHub)
    ===================================================== */
@@ -120,12 +126,25 @@
 
 /* DO NOT override body font/color — Cayman's own styles are kept as-is */
 
-/* Header: only override padding to inset content away from sidebars.
-   Gradient color, font, and all other styles are Cayman's own — not touched. */
+/* Header: fixed to viewport width, never stretched by sidebar/content changes */
 .page-header {
   background-image: linear-gradient(120deg, #155799, #159957) !important;
-  padding-left: calc(var(--bg-sidebar-width) + 2rem) !important;
-  padding-right: calc(var(--bg-toc-width) + 2rem) !important;
+  /* Fixed padding — does NOT follow sidebar CSS variables so dragging sidebars
+     won't change the header's available text width */
+  padding-left: 4rem !important;
+  padding-right: 4rem !important;
+  box-sizing: border-box !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  /* Prevent body overflow from shifting the header */
+  position: relative;
+  left: 0;
+}
+
+/* Title and tagline: never wrap due to sidebar width changes */
+.page-header .project-name,
+.page-header .project-tagline {
+  max-width: 100% !important;
 }
 
 /* Cayman already styles .project-name, .project-tagline, .btn — no overrides needed */
