@@ -37,23 +37,86 @@
     btn.setAttribute("aria-expanded", expanded ? "true" : "false");
   }
 
+  function updateSidebarTop() {
+    var header = document.querySelector(".page-header");
+    if (!header) return;
+
+    var headerH = header.offsetHeight;
+    // Set --bg-header-height once (used for initial layout before scroll)
+    document.documentElement.style.setProperty("--bg-header-height", headerH + "px");
+
+    // How far the bottom of the header is from the viewport top.
+    // This equals (headerH - scrollY), clamped to [0, headerH].
+    var scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    var top = Math.max(0, headerH - scrollY);
+
+    // Apply directly to elements — no CSS variable indirection, no transition lag.
+    var sidebar = document.querySelector(".bg-sidebar");
+    var toc = document.querySelector(".bg-sidebar-toc");
+    var openBtn = document.querySelector(".bg-sidebar-open-btn");
+
+    if (sidebar) {
+      sidebar.style.top = top + "px";
+      sidebar.style.height = "calc(100vh - " + top + "px)";
+    }
+    if (toc) {
+      toc.style.top = top + "px";
+      toc.style.height = "calc(100vh - " + top + "px)";
+    }
+    if (openBtn) {
+      openBtn.style.top = (top + 48) + "px";
+    }
+  }
+
+  function scheduleHeaderHeight() {
+    requestAnimationFrame(function () {
+      updateSidebarTop();
+    });
+  }
+
   function initSidebarCollapse() {
     var sidebar = $(".bg-sidebar");
     var btn = $("#bg-sidebar-toggle");
+    var openBtn = $("#bg-sidebar-open-btn");
     if (!sidebar || !btn) return;
 
-    var collapsed = loadState("bg_sidebar_collapsed", false);
-    if (collapsed) {
-      sidebar.classList.add("is-collapsed");
-      setExpanded(btn, false);
+    function applyCollapsed(collapsed) {
+      if (collapsed) {
+        sidebar.classList.add("is-collapsed");
+        setExpanded(btn, false);
+        if (openBtn) openBtn.style.display = "block";
+        // Adjust content wrapper immediately
+        var wrapper = $(".bg-content-wrapper");
+        if (wrapper) wrapper.style.marginLeft = "0";
+      } else {
+        sidebar.classList.remove("is-collapsed");
+        setExpanded(btn, true);
+        if (openBtn) openBtn.style.display = "none";
+        // Restore margin
+        var wrapper2 = $(".bg-content-wrapper");
+        if (wrapper2) wrapper2.style.marginLeft = "";
+      }
     }
 
+    var collapsed = loadState("bg_sidebar_collapsed", false);
+    // On small screens, always start collapsed
+    if (window.innerWidth <= 960) {
+      collapsed = true;
+    }
+    applyCollapsed(collapsed);
+
     btn.addEventListener("click", function () {
-      sidebar.classList.toggle("is-collapsed");
-      var isCollapsed = sidebar.classList.contains("is-collapsed");
-      setExpanded(btn, !isCollapsed);
+      var isCollapsed = !sidebar.classList.contains("is-collapsed");
+      applyCollapsed(isCollapsed);
       saveState("bg_sidebar_collapsed", isCollapsed);
     });
+
+    if (openBtn) {
+      openBtn.addEventListener("click", function () {
+        applyCollapsed(false);
+        saveState("bg_sidebar_collapsed", false);
+      });
+    }
   }
 
   function initPanelCollapse() {
@@ -354,6 +417,9 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    scheduleHeaderHeight();
+    window.addEventListener("scroll", updateSidebarTop, { passive: true });
+    window.addEventListener("resize", updateSidebarTop);
     initSidebarCollapse();
     initPanelCollapse();
     buildToc();

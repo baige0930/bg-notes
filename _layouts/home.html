@@ -3,7 +3,7 @@ layout: default
 ---
 
 <section class="bg-article-section">
-  <h2>📚 全部文章</h2>
+  <h2>全部文章</h2>
 
   {% assign pages_sorted = site.pages | sort: "date" %}
   {% assign article_count = 0 %}
@@ -14,9 +14,9 @@ layout: default
   {% endfor %}
 
   <div class="bg-stats-bar">
-    <span class="bg-stat">🗂 共 {{ article_count }} 篇笔记</span>
+    <span class="bg-stat">共 {{ article_count }} 篇笔记</span>
     <span class="bg-stat-sep">·</span>
-    <span class="bg-stat">🕐 最近更新：{{ site.time | date: "%Y-%m-%d" }}</span>
+    <span class="bg-stat">最近更新：{{ site.time | date: "%Y-%m-%d" }}</span>
   </div>
 
   <ul id="bg-home-list" class="bg-article-list" data-bg-paginate="true" data-bg-page-size="10">
