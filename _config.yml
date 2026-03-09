@@ -1,5 +1,6 @@
 title: "bg-notes"
 description: "我的个人笔记 ٩( ๑╹ ꇴ╹)۶"
-theme: minima
+theme: jekyll-theme-cayman
+# minima 和 jekyll-theme-cayman 不错， jekyll-theme-cayman 颜色更好看
 
 
